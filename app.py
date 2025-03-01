@@ -1,6 +1,6 @@
 # import streamlit as st
 # import pint
-# from googletrans import Translator
+# from deep_translator import GoogleTranslator
 # from fpdf import FPDF
 # from typing import Tuple, List
 
@@ -8,7 +8,7 @@
 # ureg = pint.UnitRegistry()
 
 # # Initialize translator
-# translator = Translator()
+# translator = GoogleTranslator(source="auto", target="es")
 
 # # Set page configuration
 # st.set_page_config(
@@ -94,7 +94,18 @@
 #             color: #FFFFFF;
 #         }
 #         h1 {
-#         color: white;
+#             color: white;
+#         }
+#         /* Form text color */
+#         .stNumberInput label, .stSelectbox label, .stButton button, .stMarkdown {
+#             color: white !important;
+#         }
+#         /* Save as PDF button text color */
+#         .stButton button {
+#             color: black !important;
+#         }
+#         .st.subheader {
+#             color: white !important;
 #         }
 #         </style>
 #         """,
@@ -218,9 +229,10 @@
 # )
 
 
+
 import streamlit as st
 import pint
-from googletrans import Translator
+from deep_translator import GoogleTranslator
 from fpdf import FPDF
 from typing import Tuple, List
 
@@ -228,7 +240,7 @@ from typing import Tuple, List
 ureg = pint.UnitRegistry()
 
 # Initialize translator
-translator = Translator()
+translator = GoogleTranslator(source="auto", target="es")
 
 # Set page configuration
 st.set_page_config(
@@ -286,9 +298,10 @@ languages = {
 # Function to translate text
 def translate_text(text: str, dest_language: str) -> str:
     try:
-        translated = translator.translate(text, dest=dest_language)
-        return translated.text
-    except:
+        translated = GoogleTranslator(source="auto", target=dest_language).translate(text)
+        return translated
+    except Exception as e:
+        st.error(f"Translation failed: {e}")
         return text  # Fallback to original text if translation fails
 
 # Sidebar for language and theme selection
@@ -356,7 +369,7 @@ def convert_units(value: float, from_unit: str, to_unit: str) -> Tuple[float, bo
             from_unit = from_unit.replace("celsius", "degC").replace("fahrenheit", "degF").replace("kelvin", "K")
         if to_unit in ["celsius", "fahrenheit", "kelvin"]:
             to_unit = to_unit.replace("celsius", "degC").replace("fahrenheit", "degF").replace("kelvin", "K")
-            
+        
         # Create quantities and convert
         quantity = value * ureg(from_unit)
         result = quantity.to(to_unit)
