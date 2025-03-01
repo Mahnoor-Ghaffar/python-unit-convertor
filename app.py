@@ -66,9 +66,10 @@
 # # Function to translate text
 # def translate_text(text: str, dest_language: str) -> str:
 #     try:
-#         translated = translator.translate(text, dest=dest_language)
-#         return translated.text
-#     except:
+#         translated = GoogleTranslator(source="auto", target=dest_language).translate(text)
+#         return translated
+#     except Exception as e:
+#         st.error(f"Translation failed: {e}")
 #         return text  # Fallback to original text if translation fails
 
 # # Sidebar for language and theme selection
@@ -136,7 +137,7 @@
 #             from_unit = from_unit.replace("celsius", "degC").replace("fahrenheit", "degF").replace("kelvin", "K")
 #         if to_unit in ["celsius", "fahrenheit", "kelvin"]:
 #             to_unit = to_unit.replace("celsius", "degC").replace("fahrenheit", "degF").replace("kelvin", "K")
-            
+        
 #         # Create quantities and convert
 #         quantity = value * ureg(from_unit)
 #         result = quantity.to(to_unit)
@@ -229,18 +230,21 @@
 # )
 
 
-
 import streamlit as st
 import pint
-from deep_translator import GoogleTranslator
 from fpdf import FPDF
 from typing import Tuple, List
 
+# Debugging: Check if deep_translator is installed
+try:
+    from deep_translator import GoogleTranslator
+    translator = GoogleTranslator(source="auto", target="es")
+except ImportError as e:
+    st.error(f"Failed to import deep_translator: {e}")
+    translator = None
+
 # Initialize the unit registry
 ureg = pint.UnitRegistry()
-
-# Initialize translator
-translator = GoogleTranslator(source="auto", target="es")
 
 # Set page configuration
 st.set_page_config(
@@ -297,8 +301,11 @@ languages = {
 
 # Function to translate text
 def translate_text(text: str, dest_language: str) -> str:
+    if translator is None:
+        st.error("Translation is not available. Please check the installation of deep_translator.")
+        return text
     try:
-        translated = GoogleTranslator(source="auto", target=dest_language).translate(text)
+        translated = translator.translate(text)
         return translated
     except Exception as e:
         st.error(f"Translation failed: {e}")
